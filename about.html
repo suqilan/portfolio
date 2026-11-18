@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>史奕扬 · 关于我</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="史奕扬 · 关于我">
+  <meta property="og:description" content="从理解空间里的人，到设计人使用的东西。调研、定义、方案、测试、迭代——每个决策背后都有证据。">
+  <meta property="og:image" content="https://suqilan.github.io/portfolio/assets/%E9%A2%84%E8%A7%88-%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D%E9%A1%B5.png">
+  <meta property="og:url" content="https://suqilan.github.io/portfolio/about.html">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --pink:#EFD1C9;      /* 取自作品集封面柔焦粉 */
+    --pink-deep:#EBD1CA;
+    --blue:#C8DFE9;      /* 取自封面柔焦蓝 */
+    --blue-deep:#CEE6F1;
+    --ink:#1A1A1A;
+    --grey:#9A9A9A;
+    --glass:rgba(255,255,255,0.55);
+    --glass-brd:rgba(255,255,255,0.75);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+
+  /* ========= 柔焦装饰层 ========= */
+  .blur-dot{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+  .pink-big{width:560px;height:560px;right:-120px;top:-160px;background:var(--pink);opacity:.75;}
+  .pink-small{width:300px;height:300px;right:120px;top:120px;background:var(--pink-deep);opacity:.45;}
+  .blue-big{width:620px;height:620px;left:-180px;bottom:-200px;background:var(--blue);opacity:.8;}
+  .blue-small{width:260px;height:260px;left:140px;bottom:60px;background:var(--blue-deep);opacity:.5;}
+  .blue-tr{width:420px;height:420px;right:-80px;top:55vh;background:var(--blue);opacity:.55;}
+
+  /* ========= 个人介绍页 ========= */
+  #about{position:relative;z-index:2;padding:110px 8vw 90px;min-height:100vh;}
+  .about-wrap{display:flex;gap:64px;width:100%;max-width:1440px;margin:0 auto;align-items:flex-start;}
+  .photo-card{
+    flex:0 0 340px;
+    border-radius:28px;overflow:hidden;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+    border:1px solid var(--glass-brd);
+    box-shadow:0 24px 60px rgba(150,170,190,.22);
+  }
+  .photo-card img{width:100%;display:block;}
+  .photo-card .contact{padding:20px 26px 26px;display:flex;flex-direction:column;gap:12px;}
+  .contact .c-item{display:flex;align-items:center;gap:14px;}
+  .contact .c-lb{
+    flex:0 0 auto;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8FA8B8;
+    background:rgba(143,168,184,.16);padding:5px 12px;border-radius:999px;
+  }
+  .contact .c-v{font-size:14.5px;font-weight:700;color:#2E2E2E;letter-spacing:.5px;}
+  .about-main{flex:1;}
+  .sec-title{
+    font-size:26px;font-weight:800;letter-spacing:2px;
+    border-bottom:1px solid #D8D8D8;padding-bottom:12px;margin-bottom:22px;
+  }
+  .sec-title span{font-size:14px;font-weight:600;color:#7A7A7A;letter-spacing:1px;margin-left:8px;}
+  .about-p{font-size:15.5px;line-height:1.9;color:#2E2E2E;font-weight:500;}
+  .about-p + .about-p{margin-top:4px;}
+  .two-col{display:flex;gap:56px;margin-top:44px;}
+  .two-col .col{flex:1;}
+  .edu-year{font-size:15px;font-weight:700;letter-spacing:1px;}
+  .edu-school{font-size:15px;font-weight:800;margin-top:4px;}
+  .awards{list-style:none;}
+  .awards li{font-size:14.5px;font-weight:700;line-height:2.05;color:#222;}
+  .skills{display:grid;grid-template-columns:1fr 1fr;gap:10px 32px;}
+  .skills span{font-size:14.5px;font-weight:600;color:#333;}
+  .tools{margin-top:10px;}
+  .tools img{height:96px;display:block;}
+
+  /* 简历按钮 */
+  .resume-btn{
+    display:inline-flex;align-items:center;gap:12px;
+    margin:64px auto 0;
+    padding:18px 54px;border-radius:999px;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+    border:1px solid var(--glass-brd);
+    box-shadow:0 12px 40px rgba(150,170,190,.25);
+    font-size:16px;font-weight:700;letter-spacing:3px;color:var(--ink);
+    cursor:pointer;text-decoration:none;
+    transition:transform .25s ease,box-shadow .25s ease,background .25s ease;
+  }
+  .resume-btn:hover{transform:translateY(-3px);box-shadow:0 18px 48px rgba(150,170,190,.38);background:rgba(255,255,255,.75);}
+  .resume-btn .arrow{transition:transform .25s ease;}
+  .resume-btn:hover .arrow{transform:translateX(5px);}
+  .btn-row{display:flex;justify-content:center;width:100%;}
+
+  /* 三项目组件 */
+  .projects{
+    width:100%;max-width:1440px;margin:110px auto 0;
+  }
+  .projects .row{display:flex;gap:36px;justify-content:center;}
+  .proj-card{
+    flex:1;max-width:400px;
+    border-radius:26px;padding:26px 26px 30px;
+    background:var(--glass);
+    -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+    border:1px solid var(--glass-brd);
+    box-shadow:0 20px 55px rgba(150,170,190,.22);
+    cursor:pointer;text-decoration:none;color:var(--ink);
+    transition:transform .3s ease,box-shadow .3s ease;
+    display:block;
+  }
+  .proj-card:hover{transform:scale(1.05);box-shadow:0 30px 70px rgba(140,165,190,.35);}
+  .proj-card .num{
+    font-size:34px;font-weight:800;color:#8FA8B8;letter-spacing:1px;line-height:1;
+  }
+  .proj-card .cover{
+    border-radius:18px;overflow:hidden;margin-top:14px;
+    aspect-ratio:467/506;
+  }
+  .proj-card .cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease;}
+  .proj-card:hover .cover img{transform:scale(1.04);}
+  .proj-card .cat{font-size:13px;font-weight:700;color:#6E6E6E;margin-top:18px;letter-spacing:1px;}
+  .proj-card .name{font-size:15.5px;font-weight:800;margin-top:6px;line-height:1.6;}
+
+  footer{
+    margin-top:110px;text-align:center;color:#B0B0B0;font-size:12px;letter-spacing:3px;padding-bottom:40px;
+  }
+
+  /* ===== 手机端适配 ===== */
+  @media (max-width:900px){
+    #about{padding:64px 6vw 56px;}
+    .about-wrap{flex-direction:column;align-items:center;gap:40px;}
+    .photo-card{flex:none;width:min(78vw,360px);}
+    .about-main{width:100%;}
+    .two-col{flex-direction:column;gap:36px;margin-top:36px;}
+    .projects{margin-top:64px;}
+    .projects .row{flex-direction:column;align-items:center;gap:24px;}
+    .proj-card{width:100%;max-width:480px;}
+    .resume-btn{margin-top:44px;padding:15px 42px;font-size:14px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- 柔焦装饰层 -->
+  <div class="blur-dot pink-big"></div>
+  <div class="blur-dot pink-small"></div>
+  <div class="blur-dot blue-big"></div>
+  <div class="blur-dot blue-small"></div>
+  <div class="blur-dot blue-tr"></div>
+
+  <!-- ========= 个人介绍页 ========= -->
+  <section id="about">
+    <div class="about-wrap">
+      <div class="photo-card">
+        <img src="assets/photo.png" alt="史奕扬">
+        <div class="contact">
+          <div class="c-item"><span class="c-lb">TEL</span><span class="c-v">18893604931</span></div>
+          <div class="c-item"><span class="c-lb">E-MAIL</span><span class="c-v">3436213681@qq.com</span></div>
+        </div>
+      </div>
+      <div class="about-main">
+        <div class="sec-title">关于我<span>About Me</span></div>
+        <p class="about-p">我叫史奕扬，本科就读于中南大学。</p>
+        <p class="about-p">我的底色来自城乡规划——四年训练教会我先理解“空间里的人”，再设计“人使用的东西”。开始学习交互设计后，我把这套方法带进了三个项目：从社区人宠共生的服务系统，到干预 BFRB 行为的“鹅卵石”软硬件整合产品，再到解决自动续费失控的订阅管理工具。每个项目都走完了完整的设计流程：调研、定义、方案、测试、迭代——交互不止步于装饰数字，更是每个决策背后的证据。</p>
+        <p class="about-p">在 AI 时代，我把自己定位成“驾驭 AI 的设计者”：用 AI 智能体辅助完成从信息架构到高保真页面的产出，但流程的每个关卡，问题定义、数据真伪、设计伦理，每一步由我把守。工具放大效率，判断定义质量。</p>
+
+        <div class="two-col">
+          <div class="col">
+            <div class="sec-title">教育经历<span>Education</span></div>
+            <div class="edu-year">2023–2028</div>
+            <div class="edu-school">中南大学</div>
+
+            <div class="sec-title" style="margin-top:44px;">竞赛获奖<span>Competition Awards</span></div>
+            <ul class="awards">
+              <li>2024中国大学生计算机设计大赛国家级二等奖</li>
+              <li>2025年中国大学生计算机设计大赛省级一等奖</li>
+              <li>第二十届中国好创意暨全国数字艺术设计大赛省级一等奖</li>
+              <li>第十九届全国三维数字化创新设计大赛中南赛区特等奖</li>
+            </ul>
+          </div>
+          <div class="col">
+            <div class="sec-title">技能<span>Skill</span></div>
+            <div class="skills">
+              <span>用户研究</span><span>交互设计</span>
+              <span>系统与服务思维</span><span>视觉与叙事</span>
+              <span>AI 协作</span>
+            </div>
+            <div class="sec-title" style="margin-top:44px;">设计工具<span>Design Tools</span></div>
+            <div class="tools"><img src="assets/icons.png" alt="Photoshop · Figma · Illustrator · Procreate 等"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <a class="resume-btn" href="resume.html">查看我的简历<span class="arrow">→</span></a>
+    </div>
+
+    <div class="projects">
+      <div class="row">
+        <a class="proj-card" href="project1.html">
+          <div class="num">01</div>
+          <div class="cover"><img src="assets/proj1.png" alt="BFRB 冲动干预的触觉陪伴系统"></div>
+          <div class="cat">交互设计</div>
+          <div class="name">BFRB 冲动干预的触觉陪伴系统</div>
+        </a>
+        <a class="proj-card" href="project2.html">
+          <div class="num">02</div>
+          <div class="cover"><img src="assets/proj2.png" alt="社区人宠共生服务系统交互设计"></div>
+          <div class="cat">服务系统</div>
+          <div class="name">社区人宠共生服务系统交互设计</div>
+        </a>
+        <a class="proj-card" href="project3.html">
+          <div class="num">03</div>
+          <div class="cover"><img src="assets/proj3.png" alt="自动续费透明化管理的订阅助手"></div>
+          <div class="cat">体验优化</div>
+          <div class="name">自动续费透明化管理的订阅助手</div>
+        </a>
+      </div>
+    </div>
+
+    <footer>SHIYIYANG · PORTFOLIO · 2026</footer>
+  </section>
+
+</body>
+</html>

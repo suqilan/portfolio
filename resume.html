@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>史奕扬 · 简历</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="史奕扬 · 简历">
+  <meta property="og:description" content="交互设计 / 产品设计 / 用户体验实习申请简历。">
+  <meta property="og:image" content="https://suqilan.github.io/portfolio/assets/%E9%A2%84%E8%A7%88-%E9%A6%96%E9%A1%B5.png">
+  <meta property="og:url" content="https://suqilan.github.io/portfolio/resume.html">
+<style>
+  :root{ --pink:#EFD1C9; --blue:#C8DFE9; --ink:#1A1A1A; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:#fff;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+    overflow:hidden;
+  }
+  .blur-dot{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;}
+  .pink-big{width:460px;height:460px;left:-140px;top:-160px;background:var(--pink);opacity:.5;}
+  .blue-big{width:500px;height:500px;right:-160px;bottom:-180px;background:var(--blue);opacity:.65;}
+
+  .topbar{
+    position:relative;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 34px;
+  }
+  .back{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:14px;font-weight:700;letter-spacing:2px;color:#7c7c7c;
+    text-decoration:none;padding:9px 18px;border-radius:999px;
+    border:1px solid #E4E4E4;background:rgba(255,255,255,.9);
+    transition:all .25s ease;
+  }
+  .back:hover{color:var(--ink);border-color:#c9c9c9;transform:translateX(-3px);}
+  .dl{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:14px;font-weight:800;letter-spacing:2px;color:#fff;
+    background:var(--ink);text-decoration:none;
+    padding:11px 26px;border-radius:999px;
+    transition:all .25s ease;
+  }
+  .dl:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(20,20,20,.22);}
+  .pdf-view{
+    position:relative;z-index:2;
+    height:calc(100vh - 86px);
+    padding:0 34px 20px;
+  }
+  .pdf-frame{
+    width:100%;height:100%;border:1px solid #EAEAEA;border-radius:14px;
+    box-shadow:0 18px 60px rgba(140,165,190,.18);
+    background:#f7f7f7;
+  }
+
+  /* ===== 手机端适配 ===== */
+  .pdf-note{display:none;}
+  @media (max-width:768px){
+    .topbar{padding:12px 16px;}
+    .back,.dl{font-size:11px;padding:7px 11px;letter-spacing:.5px;}
+    .dl{gap:5px;}
+    .pdf-view{padding:0 12px 12px;height:calc(100vh - 72px);}
+    .pdf-note{
+      display:block;position:fixed;left:0;right:0;bottom:18px;z-index:9;
+      text-align:center;font-size:12px;color:#9a9a9a;letter-spacing:1px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="blur-dot pink-big"></div>
+  <div class="blur-dot blue-big"></div>
+
+  <div class="topbar">
+    <a class="back" href="about.html">← 返回</a>
+    <a class="dl" href="assets/史奕扬-简历.pdf" download="史奕扬-简历.pdf">⬇ 下载简历 PDF</a>
+  </div>
+
+  <div class="pdf-note">手机端若无法直接预览 PDF，请点右上角「下载简历 PDF」</div>
+  <div class="pdf-view">
+    <object class="pdf-frame" data="assets/史奕扬-简历.pdf" type="application/pdf">
+      <iframe class="pdf-frame" src="assets/史奕扬-简历.pdf" title="简历"></iframe>
+    </object>
+  </div>
+</body>
+</html>

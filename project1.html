@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 PEBBLE · BFRB 冲动干预的触觉陪伴系统</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="01 PEBBLE · BFRB 冲动干预的触觉陪伴系统">
+  <meta property="og:description" content="软硬件整合的触觉陪伴产品，用即时干预打断 BFRB 冲动行为。">
+  <meta property="og:image" content="https://suqilan.github.io/portfolio/assets/proj1.png">
+  <meta property="og:url" content="https://suqilan.github.io/portfolio/project1.html">
+<style>
+  :root{
+    --bg:#FFFFFF; --ink:#1A1A1A; --grey:#9A9A9A;
+    --blue:#8FB6CF; --blue-deep:#6E9DBB;
+    --pink:#EFD1C9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+    color:var(--ink);overflow:hidden;
+  }
+  .blur-dot{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;}
+  .pink-big{width:480px;height:480px;left:-140px;top:-160px;background:var(--pink);opacity:.55;}
+  .blue-big{width:520px;height:520px;right:-160px;bottom:-180px;background:#C8DFE9;opacity:.7;}
+
+  /* 顶部返回 */
+  .back{
+    position:fixed;left:34px;top:28px;z-index:50;
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:14px;font-weight:700;letter-spacing:2px;color:#7c7c7c;
+    text-decoration:none;padding:9px 18px;border-radius:999px;
+    border:1px solid #E4E4E4;background:rgba(255,255,255,.85);
+    transition:all .25s ease;
+  }
+  .back:hover{color:var(--ink);border-color:#c9c9c9;transform:translateX(-3px);}
+  /* 右上角项目间跳转 */
+  .pn{position:fixed;right:34px;top:28px;z-index:50;display:inline-flex;gap:10px;}
+  .pn a{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;letter-spacing:2px;color:#7c7c7c;text-decoration:none;padding:9px 18px;border-radius:999px;border:1px solid #E4E4E4;background:rgba(255,255,255,.85);transition:all .25s ease;}
+  .pn a:hover{color:var(--ink);border-color:#c9c9c9;transform:translateX(3px);}
+
+  /* 舞台 */
+  .wrap{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;}
+  .stage{
+    position:relative;
+    height:min(82vh, calc((100vw - 140px) * 9 / 16));
+    aspect-ratio:16/9;
+    background:#fff;border-radius:14px;
+    box-shadow:0 18px 60px rgba(140,165,190,.20), 0 2px 10px rgba(140,165,190,.12);
+    overflow:hidden;
+  }
+  /* 常规动效：六条带从左到右浮动出现（同一张整图按 clip-path 切带，像素完全对齐，永不产生拼缝） */
+  .slices{position:absolute;inset:0;}
+  .slice{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;background-repeat:no-repeat;
+    opacity:0;
+    animation:sliceIn .55s cubic-bezier(.22,.9,.35,1) forwards;
+    will-change:transform,opacity;
+  }
+  @keyframes sliceIn{
+    from{opacity:0;transform:translateY(12px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+
+  /* ===== P2 环绕文字层（四句话沿圆环缓慢公转，保持水平，hover 再放大） ===== */
+  /* 不做淡入门槛：图层常显，杜绝任何环境下 transition 卡住导致整层不可见 */
+  .ring-layer{position:absolute;inset:0;}
+  .ring-tag{
+    position:absolute;transform:translate(-50%,-50%);
+    white-space:nowrap;z-index:6;
+  }
+  .ring-tag .rt{
+    display:inline-block;cursor:default;user-select:none;
+    background:rgba(255,255,255,.94);
+    padding:.22vw .65vw;border-radius:999px;
+    font-weight:700;color:#2b2b2b;letter-spacing:1px;font-size:1.02vw;
+    box-shadow:0 2px 10px rgba(120,140,160,.10);
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1),color .3s;
+  }
+  .ring-tag .rt em{font-style:normal;color:var(--blue-deep);font-weight:400;}
+  .ring-tag .rt:hover{transform:scale(1.28);color:#111;}
+
+  /* ===== P6 爆炸图层 ===== */
+  .explosion{position:absolute;inset:0;background:#fff;}
+  .ex-title{position:absolute;left:4%;top:5%;font-weight:800;}
+  .ex-title .en{color:var(--blue);font-size:2.6vw;letter-spacing:1px;}
+  .ex-title .cn{color:var(--ink);font-size:1.15vw;font-weight:700;margin-left:6px;}
+  .ex-dash{position:absolute;left:50%;top:11%;height:78%;border-left:2px dashed #A9C6DC;transform:translateX(-50%) scaleY(0);transform-origin:top;transition:transform .5s ease;}
+  .ex-board{position:absolute;left:50%;transform:translate(-50%,-50%);opacity:0;transition:top .9s cubic-bezier(.3,.8,.3,1),opacity .5s ease;will-change:top;}
+  .ex-label{position:absolute;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;width:23%;}
+  .ex-label.on{opacity:1;transform:translateY(0);}
+  .ex-label .head{display:flex;align-items:center;gap:8px;}
+  .ex-label .no{
+    flex:0 0 auto;width:1.6vw;height:1.6vw;border-radius:50%;background:var(--blue);
+    color:#fff;font-weight:800;font-size:.95vw;display:flex;align-items:center;justify-content:center;
+  }
+  .ex-label .nm{font-weight:800;font-size:1.05vw;}
+  .ex-label .en{color:var(--blue-deep);font-size:.78vw;font-weight:600;margin-top:2px;}
+  .ex-label .row{font-size:.8vw;color:#555;line-height:1.55;margin-top:2px;}
+  .ex-label .row b{color:#333;}
+  .ex-label.right{text-align:left;}
+  .ex-label.left{text-align:right;}
+  .ex-label.left .head{justify-content:flex-end;}
+  .ex-line{position:absolute;height:1.5px;background:#C9C9C9;transform:scaleX(0);transition:transform .5s ease .1s;}
+  .ex-dot{position:absolute;width:.55vw;height:.55vw;border-radius:50%;background:var(--blue);opacity:0;transition:opacity .4s ease;}
+  .ex-foot{position:absolute;left:4%;bottom:4%;font-size:.85vw;color:#333;opacity:0;transition:opacity .6s ease;}
+  .ex-foot b{color:var(--blue-deep);}
+  .ex-foot.on{opacity:1;}
+
+  /* ===== 插入页：拍一拍石仔 ===== */
+  .tap-page{position:absolute;inset:0;background:#fff;}
+  .phone-wrap{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    height:94%;
+    opacity:0;
+    animation:phoneIn .8s cubic-bezier(.22,.9,.35,1) forwards;
+  }
+  /* 首页画面放大浮现——与「拍一拍它」气泡、引导线同一时刻出现 */
+  @keyframes phoneIn{
+    from{opacity:0;transform:translate(-50%,-50%) scale(.9);}
+    to{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  }
+  .phone-wrap img{height:100%;display:block;border-radius:14px;box-shadow:0 14px 44px rgba(140,165,190,.25);}
+  .phone-wrap img.shake{animation:shake .55s ease;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0) rotate(0);}
+    20%{transform:translateX(-4px) rotate(-1deg);}
+    40%{transform:translateX(4px) rotate(1deg);}
+    60%{transform:translateX(-3px) rotate(-.6deg);}
+    80%{transform:translateX(2px) rotate(.4deg);}
+  }
+  .stone-hot{
+    position:absolute;cursor:pointer;z-index:5;
+  }
+  .stone-hot:hover{outline:2px dashed rgba(110,157,187,.55);outline-offset:6px;border-radius:50%;}
+  .pebble-face{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s ease;}
+  .pebble-face.on{opacity:1;}
+  .tap-bubble{
+    position:absolute;left:66%;top:6%;
+    padding:12px 22px;border-radius:16px 16px 16px 3px;
+    background:#fff;border:1.5px solid #C9C9C9;
+    font-weight:800;letter-spacing:2px;font-size:1.35vw;color:var(--ink);
+    opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease;
+    box-shadow:0 6px 18px rgba(140,165,190,.18);
+  }
+  .tap-bubble.on{opacity:1;transform:translateY(0);}
+  .tap-msg{
+    position:absolute;left:75.5%;top:15%;max-width:24%;
+    color:#3a3a3a;font-weight:600;line-height:1.75;text-align:left;
+    opacity:0;transform:translateY(6px);
+    transition:opacity .5s ease .1s,transform .5s ease .1s;
+  }
+  .tap-msg.on{opacity:1;transform:translateY(0);}
+  .tap-guide{position:absolute;inset:0;pointer-events:none;}
+  .tap-guide path{
+    fill:none;stroke:#8FB6CF;stroke-width:2.5;stroke-dasharray:7 7;
+    opacity:0;
+  }
+  .tap-guide path.on{opacity:.9;}
+  .tap-guide .arrowhead{fill:#8FB6CF;opacity:0;}
+  .tap-guide .arrowhead.on{opacity:.9;}
+
+  /* ===== 底部控制条 ===== */
+  .ctrl{
+    display:flex;align-items:center;gap:14px;margin-top:20px;position:relative;z-index:5;
+  }
+  .btn{
+    width:46px;height:46px;border-radius:50%;
+    border:1px solid #E2E2E2;background:#fff;cursor:pointer;
+    font-size:19px;color:#333;display:flex;align-items:center;justify-content:center;
+    transition:all .22s ease;user-select:none;
+  }
+  .btn:hover:not(.disabled){border-color:var(--blue-deep);color:var(--blue-deep);transform:translateY(-2px);box-shadow:0 8px 20px rgba(140,165,190,.25);}
+  .btn.disabled{opacity:.32;cursor:default;}
+  .pageno{font-size:14px;font-weight:700;letter-spacing:2px;color:#8a8a8a;min-width:64px;text-align:center;}
+  .divider{width:1px;height:26px;background:#E5E5E5;margin:0 6px;}
+  .social{display:flex;align-items:center;gap:12px;margin-left:4px;}
+  .sbtn{
+    display:flex;align-items:center;gap:7px;
+    padding:9px 16px;border-radius:999px;border:1px solid #E2E2E2;background:#fff;
+    cursor:pointer;font-size:14px;font-weight:700;color:#555;
+    transition:all .22s ease;user-select:none;
+  }
+  .sbtn:hover{border-color:var(--blue-deep);color:var(--blue-deep);}
+  .sbtn.liked{color:#E46A6A;border-color:#F0C4C4;background:#FDF6F6;}
+  .sbtn .ico{font-size:15px;}
+  .like-pop{position:absolute;pointer-events:none;font-size:15px;font-weight:800;color:#E46A6A;animation:pop 1s ease forwards;z-index:60;}
+  @keyframes pop{0%{opacity:0;transform:translateY(0);}15%{opacity:1;}100%{opacity:0;transform:translateY(-46px);}}
+
+  /* 评论面板 */
+  .cmt-mask{position:fixed;inset:0;background:rgba(20,20,20,.18);z-index:80;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+  .cmt-mask.on{opacity:1;pointer-events:auto;}
+  .cmt-panel{
+    position:fixed;right:0;top:0;bottom:0;width:min(400px,90vw);z-index:90;
+    background:#fff;box-shadow:-16px 0 50px rgba(100,120,140,.18);
+    transform:translateX(102%);transition:transform .35s cubic-bezier(.3,.8,.3,1);
+    display:flex;flex-direction:column;
+  }
+  .cmt-panel.on{transform:translateX(0);}
+  .cmt-head{padding:24px 26px 14px;border-bottom:1px solid #EFEFEF;display:flex;justify-content:space-between;align-items:center;}
+  .cmt-head .t{font-size:18px;font-weight:800;letter-spacing:2px;}
+  .cmt-head .t span{font-size:13px;color:#999;margin-left:8px;letter-spacing:1px;}
+  .cmt-close{border:none;background:none;font-size:22px;color:#999;cursor:pointer;}
+  .cmt-list{flex:1;overflow-y:auto;padding:16px 26px;}
+  .cmt-item{padding:13px 0;border-bottom:1px dashed #ECECEC;}
+  .cmt-item .meta{font-size:12px;color:#A5A5A5;letter-spacing:1px;margin-bottom:5px;}
+  .cmt-item .txt{font-size:14.5px;line-height:1.7;color:#2c2c2c;word-break:break-all;}
+  .cmt-empty{color:#B5B5B5;font-size:13.5px;letter-spacing:2px;text-align:center;padding:40px 0;}
+  .cmt-form{padding:16px 26px 22px;border-top:1px solid #EFEFEF;display:flex;gap:10px;}
+  .cmt-form input{
+    flex:1;border:1px solid #E2E2E2;border-radius:12px;padding:12px 15px;
+    font-size:14px;outline:none;font-family:inherit;transition:border-color .2s;
+  }
+  .cmt-form input:focus{border-color:var(--blue-deep);}
+  .cmt-form button{
+    border:none;background:var(--ink);color:#fff;border-radius:12px;
+    padding:0 22px;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:opacity .2s;
+  }
+  .cmt-form button:hover{opacity:.82;}
+
+  /* ===== 尾页：留言（沿用首页极简配色，白底+粉蓝柔焦） ===== */
+  .stage.minimal{background:transparent;box-shadow:none;border-radius:0;}
+  .fb-page{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2vh;}
+  .fb-title{font-size:1.5vw;font-weight:700;letter-spacing:3px;line-height:2.1;color:var(--ink);text-align:center;}
+  .fb-box{
+    display:flex;align-items:center;gap:10px;
+    background:#fff;border:1px solid #E2E2E2;border-radius:999px;
+    padding:8px 8px 8px 24px;width:min(34vw,460px);
+    box-shadow:0 12px 34px rgba(140,165,190,.16);
+  }
+  .fb-box input{flex:1;border:none;outline:none;background:transparent;font-size:.95vw;font-family:inherit;color:var(--ink);min-width:0;}
+  .fb-box input::placeholder{color:#B9B9B9;}
+  .fb-box button{
+    border:none;background:var(--ink);color:#fff;border-radius:999px;
+    padding:.6vw 1.5vw;font-size:.9vw;font-weight:700;letter-spacing:2px;
+    cursor:pointer;transition:opacity .2s;flex:0 0 auto;
+  }
+  .fb-box button:hover{opacity:.82;}
+  .fb-box button:disabled{opacity:.45;cursor:default;}
+  .fb-done{font-size:.95vw;font-weight:600;color:var(--blue-deep);letter-spacing:2px;opacity:0;transition:opacity .5s ease;}
+  .fb-done.on{opacity:1;}
+
+  @media (max-width:900px){
+    .ex-label .row,.ex-foot{display:none;}
+  }
+  body.still .slice,body.still .phone-wrap{animation-duration:.01s !important;animation-delay:0s !important;}
+  body.still .tap-bubble,body.still .tap-guide path,body.still .tap-guide .arrowhead{
+    opacity:.9;transition:none;
+  }
+
+  /* ===== 手机端适配 ===== */
+  @media (max-width:768px){
+    .back{left:12px;top:12px;padding:6px 12px;font-size:11px;letter-spacing:.5px;}
+    .pn{right:12px;top:12px;gap:5px;}
+    .pn a{padding:6px 10px;font-size:11px;letter-spacing:0;}
+    .wrap{height:100svh;padding:60px 0 14px;}
+    .stage{
+      width:min(100vw - 24px, calc((100svh - 170px) * 16 / 9));
+      height:auto;
+    }
+    .ctrl{gap:7px;margin-top:12px;}
+    .btn{width:34px;height:34px;font-size:15px;}
+    .pageno{font-size:11px;min-width:44px;letter-spacing:1px;}
+    .divider{height:18px;margin:0 2px;}
+    .social{gap:7px;margin-left:0;}
+    .sbtn{padding:6px 10px;gap:5px;}
+    .sbtn .ico{font-size:13px;}
+    .fb-box{padding:6px 6px 6px 14px;width:min(60vw,460px);}
+    .fb-box input{font-size:12px;}
+    .fb-box button{padding:8px 14px;font-size:11px;}
+    .fb-done{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+  <div class="blur-dot pink-big"></div>
+  <div class="blur-dot blue-big"></div>
+
+  <a class="back" href="about.html">← 返回</a>
+
+  <div class="pn"><a href="project3.html">‹ 上一个项目</a><a href="project2.html">下一个项目 ›</a></div>
+
+  <div class="wrap">
+    <div class="stage" id="stage"></div>
+
+    <div class="ctrl">
+      <div class="btn" id="prevBtn">‹</div>
+      <div class="pageno" id="pageNo">1 / 16</div>
+      <div class="btn" id="nextBtn">›</div>
+      <div class="divider"></div>
+      <div class="social">
+        <div class="sbtn" id="likeBtn"><span class="ico">♡</span><span id="likeCount">0</span></div>
+        <div class="sbtn" id="cmtBtn"><span class="ico">💬</span><span id="cmtCount">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 评论面板 -->
+  <div class="cmt-mask" id="cmtMask"></div>
+  <div class="cmt-panel" id="cmtPanel">
+    <div class="cmt-head">
+      <div class="t">评论<span>COMMENTS</span></div>
+      <button class="cmt-close" id="cmtClose">✕</button>
+    </div>
+    <div class="cmt-list" id="cmtList"></div>
+    <div class="cmt-form">
+      <input id="cmtInput" type="text" maxlength="200" placeholder="说点什么…">
+      <button id="cmtSend">发布</button>
+    </div>
+  </div>
+
+<script>
+/* ================= 数据层 =================
+   预览阶段：localStorage 存储与读取。
+   上线部署时把 API_BASE 换成后端地址（如 LeanCloud / 云函数），
+   即可实现点赞数实时更新与评论云端存储，前端其余代码无需改动。 */
+const API_BASE = null;            // 例：'https://api.example.com'
+const Store = {
+  async getLikes(){
+    if (API_BASE){ try{ const r = await fetch(API_BASE+'/likes'); return (await r.json()).count; }catch(e){} }
+    return +(localStorage.getItem('proj1_likes') || 0);
+  },
+  async addLike(){
+    if (API_BASE){ try{ const r = await fetch(API_BASE+'/like', {method:'POST'}); return (await r.json()).count; }catch(e){} }
+    const n = +(localStorage.getItem('proj1_likes') || 0) + 1;
+    localStorage.setItem('proj1_likes', n);
+    return n;
+  },
+  async getComments(){
+    if (API_BASE){ try{ const r = await fetch(API_BASE+'/comments'); return await r.json(); }catch(e){} }
+    try{ return JSON.parse(localStorage.getItem('proj1_comments') || '[]'); }catch(e){ return []; }
+  },
+  async addComment(text){
+    const c = { text, ts: Date.now() };
+    if (API_BASE){ try{ const r = await fetch(API_BASE+'/comments', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(c)}); return await r.json(); }catch(e){} }
+    const list = await this.getComments();
+    list.push(c);
+    localStorage.setItem('proj1_comments', JSON.stringify(list));
+    return list;
+  },
+  async getFeedback(){
+    if (API_BASE){ try{ const r = await fetch(API_BASE+'/feedback'); return await r.json(); }catch(e){} }
+    try{ return JSON.parse(localStorage.getItem('proj1_feedback') || '[]'); }catch(e){ return []; }
+  },
+  async addFeedback(text){
+    const c = { text, ts: Date.now() };
+    if (API_BASE){ try{ const r = await fetch(API_BASE+'/feedback', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(c)}); return await r.json(); }catch(e){} }
+    const list = await this.getFeedback();
+    list.push(c);
+    localStorage.setItem('proj1_feedback', JSON.stringify(list));
+    return list;
+  }
+};
+
+/* ================= 页面定义 ================= */
+/* 索引：0-12 = 第1~13页；13 = 拍一拍插入页；14-15 = 第14~15页 */
+const IMG = i => 'assets/proj1/p' + String(i).padStart(2, '0') + '.jpg';
+const PAGES = [
+  {type:'img', src:IMG(1)}, {type:'img', src:IMG(2), special:'ring'},
+  {type:'img', src:IMG(3)}, {type:'img', src:IMG(4)}, {type:'img', src:IMG(5)},
+  {type:'explosion'},
+  {type:'img', src:IMG(7)}, {type:'img', src:IMG(8)}, {type:'img', src:IMG(9)},
+  {type:'img', src:IMG(10)}, {type:'img', src:IMG(11)}, {type:'img', src:IMG(12)},
+  {type:'img', src:IMG(13)},
+  {type:'tap'},
+  {type:'img', src:IMG(14)}, {type:'img', src:IMG(15)},
+  {type:'feedback'},
+];
+
+const stage = document.getElementById('stage');
+let cur = -1;
+
+/* 调试：?p=N 直达第N页，&still=1 跳过动画直接定格 */
+const QS = new URLSearchParams(location.search);
+const STILL = QS.has('still');
+function after(ms, fn){ setTimeout(fn, STILL ? 0 : ms); }
+let exploded = false;
+
+function labelHTML(no, nm, en, rows){
+  return `<div class="head"><div class="no">${no}</div><div class="nm">${nm}</div></div><div class="en">${en}</div>`
+    + rows.map(r => `<div class="row">${r}</div>`).join('');
+}
+
+/* ---------- 渲染 ---------- */
+function render(idx){
+  if (idx === cur) return;
+  cur = idx;
+  stage.innerHTML = '';
+  const p = PAGES[idx];
+  stage.classList.toggle('minimal', p.type === 'feedback');
+  if (ringRAF || ringIV){
+    if (!(p.type === 'img' && p.special === 'ring')) stopRingMotion();
+  }
+
+  if (p.type === 'img'){
+    const sl = document.createElement('div');
+    sl.className = 'slices';
+    for (let i = 0; i < 6; i++){
+      const s = document.createElement('div');
+      s.className = 'slice';
+      s.style.backgroundImage = `url('${p.src}')`;
+      s.style.clipPath = `inset(0 ${(5-i)*16.6667}% 0 ${i*16.6667}%)`;
+      s.style.animationDelay = (i * 90) + 'ms';
+      sl.appendChild(s);
+    }
+    stage.appendChild(sl);
+    if (p.special === 'ring') buildRing();
+  }
+  else if (p.type === 'explosion'){ buildExplosion(); }
+  else if (p.type === 'tap'){ buildTap(); }
+  else if (p.type === 'feedback'){ buildFeedback(); }
+
+  updateCtrl();
+}
+
+/* ---------- P2 环绕文字：四句话沿圆环缓慢公转 ---------- */
+/* 驱动双保险：rAF + setInterval 兜底；位置=绝对时间的纯函数，重复调用幂等，
+   即使 rAF 被嵌入式预览/后台标签节流，setInterval 也保证持续转动 */
+let ringRAF = null, ringIV = null;
+function stopRingMotion(){
+  if (ringRAF){ cancelAnimationFrame(ringRAF); ringRAF = null; }
+  if (ringIV){ clearInterval(ringIV); ringIV = null; }
+}
+function buildRing(){
+  stopRingMotion();
+  const layer = document.createElement('div');
+  layer.className = 'ring-layer';
+  /* 原图四句环文字已在 p02.jpg 中擦除（圆环按拟合圆方程重绘复原），
+     HTML 文字直接沿环公转 */
+  /* 圆环几何（最小二乘拟合）：圆心 76.5%/55.35%，半径 14%宽 = 24.9%高 */
+  const CX = 76.5, CY = 55.35, RX = 14, RY = 24.9;
+  const tags = [
+    {a0:-45,  html:'社交回避：怕被看见<em> /</em>'},
+    {a0:34,   html:'外观困扰：指甲残缺、疤痕外露<em> /</em>'},
+    {a0:150,  html:'心理失控：想停停不下来的自我否定<em> /</em>'},
+    {a0:208,  html:'健康受损，感染发炎<em> /</em>'},
+  ];
+  const D2R = Math.PI / 180;
+  const items = tags.map(tt => {
+    const d = document.createElement('div');
+    d.className = 'ring-tag';
+    d.innerHTML = `<span class="rt">${tt.html}</span>`;
+    layer.appendChild(d);
+    return {el:d, a0:tt.a0};
+  });
+  stage.appendChild(layer);
+  /* 公转：9°/秒 ≈ 40 秒一圈，文字始终水平；位置=进入页面起经过的时间
+     ?seek=毫秒 可把时钟回拨，用于截图验证任意时刻的姿态 */
+  const t0 = performance.now() - (parseFloat(QS.get('seek')) || 0);
+  const SPEED = 0.009;   /* 度/毫秒 */
+  function update(now){
+    const deg = (now - t0) * SPEED;
+    items.forEach(it => {
+      const t = (it.a0 + deg) * D2R;
+      it.el.style.left = (CX + RX * Math.cos(t)) + '%';
+      it.el.style.top  = (CY + RY * Math.sin(t)) + '%';
+    });
+  }
+  function raf(now){ update(now); ringRAF = requestAnimationFrame(raf); }
+  ringRAF = requestAnimationFrame(raf);
+  ringIV = setInterval(() => update(performance.now()), 40);
+}
+
+/* ---------- P6 爆炸图 ---------- */
+function buildExplosion(){
+  const ex = document.createElement('div');
+  ex.className = 'explosion';
+  const boards = [
+    {k:'imu',   y:25.9, w:7.2},
+    {k:'temp',  y:38.2, w:8.0},
+    {k:'tof',   y:50.1, w:8.0},
+    {k:'soc',   y:61.0, w:7.7},
+    {k:'motor', y:73.0, w:6.8},
+  ];
+  const labels = [
+    {side:'right', y:25.9, no:1, nm:'运动传感器 · IMU（6轴/9轴）', en:'Motion Sensor',
+     rows:['<b>功能:</b>记录加速度与角速度', '<b>型号:</b>MPU-6050 / ICM-42688', '<b>尺寸:</b>3×3×0.9 或 4.4×4×0.9 mm（模块约12×12 mm）']},
+    {side:'left',  y:38.2, no:2, nm:'温度传感器 · 热电堆红外', en:'Thermopile',
+     rows:['<b>功能:</b>非接触侦测手部附近温度变化', '<b>型号:</b>MLX90614（单点）/ MLX90632（SMD）', '<b>尺寸:</b>TO-39 9.2×4.6 mm / MLX90632 3×3×1 mm']},
+    {side:'right', y:50.1, no:3, nm:'距离传感器 · ToF 飞行时间', en:'Time of Flight',
+     rows:['<b>功能:</b>检测手与身体的距离', '<b>型号:</b>VL53L1X / VL53L5CX', '<b>尺寸:</b>4.9×2.5×1.6 / 6.4×3.0×1.5 mm（模块 10.5×8.5 或 25×18 mm）']},
+    {side:'left',  y:61.0, no:4, nm:'主控 · 蓝牙 SoC / MCU', en:'Bluetooth SoC',
+     rows:['<b>功能:</b>数据处理、连接 App', '<b>型号:</b>nRF52840 / ESP32-C3', '<b>尺寸:</b>7×7×1 mm / 5×5 mm']},
+    {side:'right', y:73.0, no:5, nm:'提醒元件 · 振动马达', en:'Haptic Motor',
+     rows:['<b>功能:</b>触觉反馈', '<b>型号:</b>线性马达（LRA）/ 硬币马达', '<b>尺寸:</b>8×3 mm / Ø10×2–3 mm']},
+  ];
+  let html = `<div class="ex-title"><span class="en">EXPLODED VIEW</span><span class="cn">产品核心元件爆炸图</span></div>
+    <div class="ex-dash" id="exDash"></div>`;
+  /* 板：初始全部压在中心(top 50%)，之后散开 */
+  boards.forEach((b, i) => {
+    html += `<img class="ex-board" id="bd${i}" src="assets/proj1/board_${b.k}.png"
+      style="top:50%;width:${b.w}%;transition-delay:${i*130}ms;">`;
+  });
+  labels.forEach((L, i) => {
+    const x = L.side === 'left' ? 6 : 71;
+    html += `<div class="ex-label ${L.side}" id="lb${i}" style="left:${x}%;top:${L.y}%;transform:translateY(-50%) translateY(10px);">${labelHTML(L.no, L.nm, L.en, L.rows)}</div>`;
+    /* 连接线：从板到说明 */
+    if (L.side === 'right'){
+      html += `<div class="ex-line" id="ln${i}" style="left:55%;top:${L.y}%;width:14%;transform-origin:left;transition-delay:${i*130+650}ms;"></div>
+               <div class="ex-dot" style="left:54.2%;top:${L.y}%;transition-delay:${i*130+650}ms;"></div>`;
+    } else {
+      html += `<div class="ex-line" id="ln${i}" style="left:31%;top:${L.y}%;width:14%;transform-origin:right;transition-delay:${i*130+650}ms;"></div>
+               <div class="ex-dot" style="left:45.2%;top:${L.y}%;transition-delay:${i*130+650}ms;"></div>`;
+    }
+  });
+  html += `<div class="ex-foot" id="exFoot"><b>堆叠顺序：</b>自上而下为贴腕面 → 底壳，传感器层（01-03）朝向手腕采集信号，主控层（04）居中运算，提醒层（05）贴近表带传导振动。</div>`;
+  ex.innerHTML = html;
+  stage.appendChild(ex);
+
+  /* 动画时序：虚线展开 → 元件板压合状态停留 → 纵向散开 → 说明与连接线浮现 → 定格 */
+  after(150, () => document.getElementById('exDash').style.transform = 'translateX(-50%) scaleY(1)');
+  after(350, () => {
+    boards.forEach((b, i) => {
+      const el = document.getElementById('bd' + i);
+      el.style.opacity = 1;
+    });
+  });
+  after(900, () => {                       /* 压合状态多停留约半秒再散开 */
+    boards.forEach((b, i) => {
+      document.getElementById('bd' + i).style.top = b.y + '%';
+    });
+  });
+  after(2300, () => {
+    labels.forEach((_, i) => {
+      document.getElementById('lb' + i).classList.add('on');
+      document.getElementById('ln' + i).style.transform = 'scaleX(1)';
+    });
+    document.querySelectorAll('.ex-dot').forEach(d => d.style.opacity = 1);
+    document.getElementById('exFoot').classList.add('on');
+  });
+}
+
+/* ---------- 插入页：拍一拍石仔 ---------- */
+function buildTap(){
+  const tp = document.createElement('div');
+  tp.className = 'tap-page';
+  tp.innerHTML = `
+    <div class="phone-wrap" id="pw">
+      <img src="assets/proj1/app-home.png" alt="鹅卵石 App 首页" id="tapImg">
+      <div class="stone-hot" id="stoneHot"
+        style="left:53%;top:14.5%;width:22%;height:13%;"></div>
+      <svg class="pebble-face" id="pebFace" viewBox="0 0 1560 3376" preserveAspectRatio="xMidYMid meet">
+        <path d="M 893 700 Q 915 668 937 700" stroke="#4a4440" stroke-width="17" fill="none" stroke-linecap="round"/>
+        <path d="M 1043 710 Q 1065 678 1087 710" stroke="#4a4440" stroke-width="17" fill="none" stroke-linecap="round"/>
+        <path d="M 925 752 Q 968 806 1011 748" stroke="#4a4440" stroke-width="15" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="tap-msg" id="tapMsg">今天表现良好哦，石仔心情不错</div>
+    </div>
+    <div class="tap-bubble" id="tapBubble">拍一拍它</div>
+    <svg class="tap-guide" id="tapGuide"></svg>
+  `;
+  stage.appendChild(tp);
+
+  const pw = document.getElementById('pw');
+  const bubble = document.getElementById('tapBubble');
+  const msg = document.getElementById('tapMsg');
+  const guide = document.getElementById('tapGuide');
+  const hot = document.getElementById('stoneHot');
+
+  function fitMsgFont(){
+    const imgH = document.getElementById('tapImg').getBoundingClientRect().height;
+    msg.style.fontSize = Math.max(11, imgH * 30 / 3376) + 'px';
+  }
+  fitMsgFont();
+
+  /* 首页画面与「拍一拍它」气泡、引导线【同时】出现（老板明确要求） */
+  bubble.classList.add('on');
+  drawGuide();
+  /* 手机放大动画（0.8s）结束时重画一次，端点对准定格后的石仔 */
+  setTimeout(drawGuide, 900);
+  setTimeout(drawGuide, 1200);
+  window.addEventListener('resize', drawGuide);
+
+  function drawGuide(){
+    const s = stage.getBoundingClientRect();
+    const b = bubble.getBoundingClientRect();
+    const st = hot.getBoundingClientRect();
+    guide.setAttribute('viewBox', `0 0 ${s.width} ${s.height}`);
+    guide.setAttribute('width', s.width); guide.setAttribute('height', s.height);
+    const x1 = b.left - s.left + 4,        y1 = b.top - s.top + b.height - 4;
+    const x2 = st.left - s.left + st.width * 0.62, y2 = st.top - s.top + st.height * 0.45;
+    guide.innerHTML = `<path id="gp" d="M ${x1} ${y1} C ${x1 - (x1-x2)*0.45} ${y1}, ${x2 + (x1-x2)*0.25} ${y2 - 60}, ${x2} ${y2}"/>
+      <polygon class="arrowhead" points="${x2-9},${y2-16} ${x2+7},${y2-6} ${x2-5},${y2+9}"/>`;
+    const gp = document.getElementById('gp');
+    const ah = guide.querySelector('.arrowhead');
+    if (gp) gp.classList.add('on');
+    if (ah) ah.classList.add('on');
+  }
+
+  /* 拍一拍：抖动 → 眯眼微笑 → 浮现小字 */
+  let tapped = false;
+  function doTap(){
+    const img = document.getElementById('tapImg');
+    img.classList.remove('shake'); void img.offsetWidth;
+    img.classList.add('shake');
+    document.getElementById('pebFace').classList.add('on');
+    if (!tapped){
+      tapped = true;
+      setTimeout(() => {
+        fitMsgFont();
+        msg.classList.add('on');   /* 小字在手机界面内部（CSS 定位于石仔右侧屏幕内） */
+      }, 600);
+    }
+  }
+  hot.addEventListener('click', doTap);
+  if (QS.has('tap')) setTimeout(doTap, STILL ? 100 : 1600);
+}
+
+/* ---------- 尾页：留言 ---------- */
+function buildFeedback(){
+  const fb = document.createElement('div');
+  fb.className = 'fb-page';
+  fb.innerHTML = `
+    <div class="fb-title">感谢您耐心看完第一个项目，<br>可以留下几句建议吗？</div>
+    <div class="fb-box">
+      <input id="fbInput" type="text" maxlength="200" placeholder="写下您的建议…">
+      <button id="fbSave">保存</button>
+    </div>
+    <div class="fb-done" id="fbDone">已保存，感谢您的建议 ♡</div>
+  `;
+  stage.appendChild(fb);
+  const input = document.getElementById('fbInput');
+  const save = document.getElementById('fbSave');
+  const done = document.getElementById('fbDone');
+  save.addEventListener('click', async () => {
+    const t = input.value.trim();
+    if (!t || save.disabled) return;
+    await Store.addFeedback(t);
+    input.value = '';
+    input.disabled = true;
+    save.disabled = true;
+    save.textContent = '已保存';
+    done.classList.add('on');
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') save.click(); });
+}
+
+/* ================= 控制条 / 点赞 / 评论 ================= */
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const pageNo = document.getElementById('pageNo');
+const likeBtn = document.getElementById('likeBtn');
+const likeCount = document.getElementById('likeCount');
+const cmtBtn = document.getElementById('cmtBtn');
+const cmtCount = document.getElementById('cmtCount');
+
+function pageIndex(){
+  return cur;
+}
+function updateCtrl(){
+  pageNo.textContent = (cur + 1) + ' / ' + PAGES.length;
+  prevBtn.classList.toggle('disabled', cur === 0);
+  nextBtn.classList.toggle('disabled', cur === PAGES.length - 1);
+}
+prevBtn.addEventListener('click', () => { if (cur > 0) render(cur - 1); });
+nextBtn.addEventListener('click', () => { if (cur < PAGES.length - 1) render(cur + 1); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' && cur > 0) render(cur - 1);
+  if (e.key === 'ArrowRight' && cur < PAGES.length - 1) render(cur + 1);
+});
+
+/* 点赞 */
+let liked = localStorage.getItem('proj1_liked') === '1';
+likeBtn.classList.toggle('liked', liked);
+Store.getLikes().then(n => likeCount.textContent = n);
+likeBtn.addEventListener('click', e => {
+  if (liked) return;
+  liked = true;
+  localStorage.setItem('proj1_liked', '1');
+  likeBtn.classList.add('liked');
+  Store.addLike().then(n => likeCount.textContent = n);
+  const pop = document.createElement('div');
+  pop.className = 'like-pop'; pop.textContent = '+1';
+  const r = likeBtn.getBoundingClientRect();
+  pop.style.left = (r.left + r.width/2 - 8) + 'px';
+  pop.style.top = (r.top - 20) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+});
+
+/* 评论 */
+const cmtMask = document.getElementById('cmtMask');
+const cmtPanel = document.getElementById('cmtPanel');
+const cmtList = document.getElementById('cmtList');
+const cmtInput = document.getElementById('cmtInput');
+function fmtTs(ts){
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+async function refreshComments(){
+  const list = await Store.getComments();
+  cmtCount.textContent = list.length;
+  cmtList.innerHTML = list.length
+    ? list.slice().reverse().map(c =>
+        `<div class="cmt-item"><div class="meta">访客 · ${fmtTs(c.ts)}</div><div class="txt">${c.text.replace(/</g,'&lt;')}</div></div>`
+      ).join('')
+    : `<div class="cmt-empty">还没有评论，来抢沙发～</div>`;
+}
+cmtBtn.addEventListener('click', () => { refreshComments(); cmtMask.classList.add('on'); cmtPanel.classList.add('on'); });
+document.getElementById('cmtClose').addEventListener('click', () => { cmtMask.classList.remove('on'); cmtPanel.classList.remove('on'); });
+cmtMask.addEventListener('click', () => { cmtMask.classList.remove('on'); cmtPanel.classList.remove('on'); });
+document.getElementById('cmtSend').addEventListener('click', async () => {
+  const t = cmtInput.value.trim();
+  if (!t) return;
+  await Store.addComment(t);
+  cmtInput.value = '';
+  refreshComments();
+});
+cmtInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('cmtSend').click(); });
+
+/* 启动 */
+Store.getComments().then(l => cmtCount.textContent = l.length);
+if (STILL) document.body.classList.add('still');
+render(Math.min(parseInt(QS.get('p') || '1', 10) - 1, PAGES.length - 1));
+</script>
+</body>
+</html>

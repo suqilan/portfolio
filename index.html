@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>史奕扬 · 个人作品集</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="史奕扬 · 个人作品集">
+  <meta property="og:description" content="中南大学 · 城乡规划转交互设计。三个走完完整设计流程的作品：BFRB 触觉陪伴系统、社区人宠共生服务系统、订阅制服务失控管理。">
+  <meta property="og:image" content="https://suqilan.github.io/portfolio/assets/%E9%A2%84%E8%A7%88-%E9%A6%96%E9%A1%B5.png">
+  <meta property="og:url" content="https://suqilan.github.io/portfolio/index.html">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --pink:#EFD1C9;      /* 取自作品集封面柔焦粉 */
+    --pink-deep:#EBD1CA;
+    --blue:#C8DFE9;      /* 取自封面柔焦蓝 */
+    --blue-deep:#CEE6F1;
+    --ink:#1A1A1A;
+    --grey:#9A9A9A;
+    /* 牛皮纸色，取自老板提供的盒子照片 */
+    --kraft-light:#F3C28E;
+    --kraft-mid:#E9B77E;
+    --kraft-deep:#C89468;
+    --kraft-dark:#A87A50;
+    --kraft-top:#DFC49B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+    color:var(--ink);
+    overflow:hidden;
+  }
+
+  /* ========= 柔焦装饰层 ========= */
+  .blur-dot{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+  .pink-big{width:560px;height:560px;right:-120px;top:-160px;background:var(--pink);opacity:.75;}
+  .pink-small{width:300px;height:300px;right:120px;top:120px;background:var(--pink-deep);opacity:.45;}
+  .blue-big{width:620px;height:620px;left:-180px;bottom:-200px;background:var(--blue);opacity:.8;}
+  .blue-small{width:260px;height:260px;left:140px;bottom:60px;background:var(--blue-deep);opacity:.5;}
+  .blue-tr{width:420px;height:420px;right:-80px;top:55vh;background:var(--blue);opacity:.55;}
+
+  /* ========= 首页：纸盒（真 3D 立方体）========= */
+  #home{
+    position:relative;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:2;cursor:pointer;
+  }
+  .box-stage{
+    perspective:1100px;
+    width:190px;height:190px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .box-wobble{animation:wobble 3.6s ease-in-out infinite;}
+  @keyframes wobble{
+    0%{transform:translateY(0) rotateZ(0deg);}
+    25%{transform:translateY(-4px) rotateZ(.8deg);}
+    50%{transform:translateY(0) rotateZ(0deg);}
+    62%{transform:translateY(2px) rotateZ(-.7deg);}
+    80%{transform:translateY(-2px) rotateZ(.4deg);}
+    100%{transform:translateY(0) rotateZ(0deg);}
+  }
+  .cube{
+    width:150px;height:150px;position:relative;
+    transform-style:preserve-3d;
+    transform:rotateX(-18deg) rotateY(28deg);
+    transition:transform .15s ease-out;
+    will-change:transform;
+  }
+  .face{
+    position:absolute;inset:0;
+    background:linear-gradient(135deg,var(--kraft-light) 0%,var(--kraft-mid) 60%,var(--kraft-deep) 100%);
+    box-shadow:inset 0 0 28px rgba(140,90,40,.18);
+  }
+  /* 瓦楞纸折痕 */
+  .face::before{
+    content:"";position:absolute;inset:0;
+    background:
+      linear-gradient(rgba(140,90,40,.13),rgba(140,90,40,.13)) 0 34%/100% 2px no-repeat,
+      linear-gradient(rgba(140,90,40,.13),rgba(140,90,40,.13)) 0 66%/100% 2px no-repeat;
+  }
+  /* 各面明暗（模拟照片光照：左亮右暗、顶面最浅）*/
+  .ft{transform:rotateX(90deg) translateZ(75px);background:linear-gradient(180deg,var(--kraft-top) 0%,var(--kraft-mid) 100%);}
+  .fb{transform:rotateX(-90deg) translateZ(75px);background:var(--kraft-dark);}
+  .fl{transform:rotateY(-90deg) translateZ(75px);background:linear-gradient(180deg,var(--kraft-light) 0%,var(--kraft-mid) 100%);}
+  .fr{transform:rotateY(90deg) translateZ(75px);background:linear-gradient(180deg,var(--kraft-deep) 0%,var(--kraft-dark) 100%);}
+  .ff{transform:translateZ(75px);}
+  .fk{transform:rotateY(180deg) translateZ(75px);background:linear-gradient(135deg,var(--kraft-mid) 0%,var(--kraft-deep) 100%);}
+  /* 顶面：开盖缝线 + 白色胶带（照片细节）*/
+  .ft::before{
+    background:
+      linear-gradient(rgba(120,80,35,.35),rgba(120,80,35,.35)) 0 50%/100% 3px no-repeat;
+  }
+  .ft::after{
+    content:"";position:absolute;left:50%;top:0;width:32px;height:100%;
+    transform:translateX(-50%);
+    background:rgba(250,248,246,.9);
+    border-left:1px solid rgba(190,180,165,.5);
+    border-right:1px solid rgba(190,180,165,.5);
+  }
+  /* 正面：封口折边 */
+  .ff::after{
+    content:"";position:absolute;left:0;top:0;width:100%;height:26px;
+    background:linear-gradient(180deg,rgba(120,80,35,.14),rgba(120,80,35,0));
+    border-bottom:2px solid rgba(140,90,40,.28);
+  }
+  .shadow{
+    width:160px;height:24px;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(120,130,140,.20),rgba(120,130,140,0) 70%);
+    margin-top:64px;
+    animation:shw 3.6s ease-in-out infinite;
+  }
+  @keyframes shw{0%,50%,100%{transform:scale(1);opacity:1;}25%{transform:scale(.92);opacity:.75;}62%{transform:scale(1.05);opacity:.9;}}
+
+  .title-en{
+    margin-top:34px;
+    color:var(--grey);
+    font-size:30px;font-weight:700;letter-spacing:2px;
+  }
+  .title-cn{
+    color:var(--ink);
+    font-size:56px;font-weight:800;letter-spacing:14px;margin-top:6px;
+  }
+  .hint{
+    margin-top:44px;color:#B5B5B5;font-size:13px;letter-spacing:4px;
+    animation:blink 2.2s ease-in-out infinite;
+  }
+  @keyframes blink{0%,100%{opacity:.35;}50%{opacity:1;}}
+
+  /* ===== 手机端适配 ===== */
+  @media (max-width:768px){
+    .title-en{font-size:20px;margin-top:26px;}
+    .title-cn{font-size:34px;letter-spacing:8px;}
+    .hint{font-size:11px;letter-spacing:3px;margin-top:32px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- 柔焦装饰层 -->
+  <div class="blur-dot pink-big"></div>
+  <div class="blur-dot pink-small"></div>
+  <div class="blur-dot blue-big"></div>
+  <div class="blur-dot blue-small"></div>
+  <div class="blur-dot blue-tr"></div>
+
+  <!-- ========= 首页：纸盒 ========= -->
+  <section id="home">
+    <div class="box-stage">
+      <div class="box-wobble">
+        <div class="cube" id="cube">
+          <div class="face ft"></div>
+          <div class="face fb"></div>
+          <div class="face fl"></div>
+          <div class="face fr"></div>
+          <div class="face ff"></div>
+          <div class="face fk"></div>
+        </div>
+      </div>
+    </div>
+    <div class="shadow"></div>
+    <div class="title-en">portfolio</div>
+    <div class="title-cn">个人作品集</div>
+    <div class="hint">CLICK THE BOX</div>
+  </section>
+
+<script>
+  // ===== 纸盒：鼠标方向 3D 自转（位置不动）=====
+  const cube = document.getElementById('cube');
+  const home = document.getElementById('home');
+  let tx = -18, ty = 28;      // 目标角
+  let cx = -18, cy = 28;      // 当前角
+
+  // ?tilt=x,y 用于截图验证姿态（覆盖为指定绝对角）
+  const m = location.search.match(/tilt=(-?\d+),(-?\d+)/);
+  if (m) { tx = +m[2]; ty = +m[1]; cx = tx; cy = ty; }
+
+  document.addEventListener('mousemove', e => {
+    if (m) return;
+    const r = home.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width/2)) / (r.width/2);   // -1 ~ 1
+    const dy = (e.clientY - (r.top + r.height/2)) / (r.height/2);
+    ty = 28 + dx * 32;
+    tx = -18 - dy * 26;
+  });
+
+  (function loop(){
+    cx += (tx - cx) * 0.08;
+    cy += (ty - cy) * 0.08;
+    cube.style.transform = 'rotateX(' + cx.toFixed(2) + 'deg) rotateY(' + cy.toFixed(2) + 'deg)';
+    requestAnimationFrame(loop);
+  })();
+
+  // 触屏：提示文案改为 TAP，触摸拖动也能转盒子
+  if (matchMedia('(pointer:coarse)').matches) {
+    document.querySelector('.hint').textContent = 'TAP THE BOX';
+    home.addEventListener('touchmove', e => {
+      if (m) return;
+      const t = e.touches[0];
+      const r = home.getBoundingClientRect();
+      const dx = (t.clientX - (r.left + r.width/2)) / (r.width/2);
+      const dy = (t.clientY - (r.top + r.height/2)) / (r.height/2);
+      ty = 28 + Math.max(-1, Math.min(1, dx)) * 32;
+      tx = -18 - Math.max(-1, Math.min(1, dy)) * 26;
+    }, {passive:true});
+  }
+
+  // 点击盒子 → 进入个人介绍页（独立页面）
+  home.addEventListener('click', () => {
+    location.href = 'about.html';
+  });
+</script>
+</body>
+</html>
